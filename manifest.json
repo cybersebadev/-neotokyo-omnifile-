@@ -1,0 +1,15 @@
+{
+  "name": "OmniFile Neo-Tokyo Pro",
+  "short_name": "OmniFile",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#030306",
+  "theme_color": "#ff2a85",
+  "icons": [
+    {
+      "src": "https://cybersebadev.github.io/-neotokyo-omnifile-/icon.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
