@@ -1,0 +1,250 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0b0716">
+<title>OmniFile ZA 圧縮</title>
+<style>
+:root{--bg:#0b0716;--bar:#150d29;--card:#1a1233;--p:#ff4fa3;--c:#35e6ff;--t:#ece9ff;--m:#9a90c6;box-sizing:border-box}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;margin:0;background:var(--bg);color:var(--t);font-family:system-ui,sans-serif}
+body{display:flex;flex-direction:column;max-width:760px;margin:auto}
+button,input,select,textarea{font:inherit;color:var(--t)}
+header{background:var(--bar);padding:calc(env(safe-area-inset-top,0px) + 10px) 12px 8px;border-bottom:2px solid var(--p);position:sticky;top:0;z-index:5}
+.row1{display:flex;align-items:center;gap:8px}
+.logo{font-weight:800;letter-spacing:1px;color:var(--c);font-size:18px;flex:1}.logo i{font-style:normal;color:var(--p)}
+.ib{background:none;border:0;font-size:20px;padding:6px 8px;cursor:pointer;border-radius:8px}.ib:active{background:#fff2}
+#crumb{display:flex;gap:2px;overflow-x:auto;white-space:nowrap;margin-top:6px;scrollbar-width:none}
+#crumb button{background:#fff1;border:0;border-radius:6px;padding:4px 9px;font-size:13px;color:var(--c);cursor:pointer}
+#crumb button:last-child{color:#fff;background:var(--p)}
+#q{width:100%;margin-top:8px;background:#0b0716;border:1px solid #3b2d66;border-radius:10px;padding:8px 12px;display:none}
+#list{flex:1;overflow-y:auto;padding:6px 10px 150px}
+.row{display:flex;align-items:center;gap:12px;padding:9px 8px;border-radius:12px;user-select:none;-webkit-user-select:none;cursor:pointer}
+.row:active{background:#fff1}.row.s{background:#35e6ff22;outline:1px solid var(--c)}
+.ic{width:42px;height:42px;border-radius:11px;display:grid;place-items:center;font-size:22px;background:var(--card);flex:none}
+.ic.f{background:#ffb84733}.ic.a{background:#ff4fa333}.ic.t{background:#35e6ff22}
+.nm{flex:1;min-width:0}.nm b{display:block;font-weight:600;font-size:15px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.nm small{color:var(--m);font-size:12px}
+.ck{width:22px;height:22px;border-radius:50%;border:2px solid var(--m);display:none;place-items:center;font-size:13px;flex:none}
+.sel .ck{display:grid}.row.s .ck{background:var(--c);border-color:var(--c);color:#000}
+.empty{text-align:center;color:var(--m);padding:60px 20px;line-height:1.7}.empty big{font-size:44px;display:block}
+#fab{position:fixed;right:16px;bottom:calc(env(safe-area-inset-bottom,0px) + 18px);width:58px;height:58px;border-radius:18px;border:0;background:linear-gradient(135deg,var(--p),#a24bff);font-size:30px;color:#fff;box-shadow:0 6px 20px #ff4fa388;cursor:pointer}
+#sb{position:fixed;left:0;right:0;bottom:0;background:var(--bar);border-top:2px solid var(--c);display:none;justify-content:space-around;padding:6px 4px calc(env(safe-area-inset-bottom,0px) + 6px);max-width:760px;margin:auto}
+#sb button{background:none;border:0;display:flex;flex-direction:column;align-items:center;font-size:11px;gap:2px;padding:4px 8px;cursor:pointer}#sb button span{font-size:22px}
+.sel #sb{display:flex}.sel #fab{display:none}
+#ov{position:fixed;inset:0;background:#000a;display:none;z-index:9;padding:14px}
+#box{background:var(--card);border:1px solid #3b2d66;border-radius:18px;padding:16px;width:100%;max-width:460px;max-height:85vh;overflow:auto}
+#ov.sheet{align-items:flex-end;justify-content:center}#ov.mid{align-items:center;justify-content:center}
+#box h3{margin:0 0 10px;color:var(--c);font-size:16px;word-break:break-all}
+label{font-size:12px;color:var(--m)}
+input.i,select,textarea{width:100%;background:#0b0716;border:1px solid #3b2d66;border-radius:10px;padding:10px;margin:4px 0 12px}textarea{min-height:200px;font-family:monospace;font-size:13px}
+.opt{display:flex;gap:12px;align-items:center;width:100%;background:none;border:0;padding:13px 8px;font-size:15px;text-align:left;border-radius:10px;cursor:pointer}.opt:active{background:#fff1}
+.acts{display:flex;gap:8px;justify-content:flex-end}.bt{border:1px solid var(--m);background:none;border-radius:10px;padding:9px 16px;cursor:pointer}.bt.p{background:var(--p);border-color:var(--p);font-weight:700}
+.li{font-size:12px;font-family:monospace;padding:3px 0;border-bottom:1px solid #fff1;display:flex;justify-content:space-between;gap:8px}.li span:first-child{word-break:break-all}.li span:last-child{color:var(--m);white-space:nowrap}
+#toast{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 90px);transform:translateX(-50%);background:#fff;color:#111;padding:9px 16px;border-radius:99px;font-size:13px;opacity:0;transition:.25s;pointer-events:none;z-index:20;max-width:90%;text-align:center}#toast.on{opacity:1}
+
+#intro{position:fixed;inset:0;z-index:99;background:linear-gradient(#1b0a3a,#3b0f4f 55%,#ff4fa3 135%);display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden;transition:opacity .8s}
+#intro.out{opacity:0;pointer-events:none}
+.sun{position:absolute;width:62vmin;height:62vmin;border-radius:50%;background:radial-gradient(circle,#ff3b5c,#d3123f);box-shadow:0 0 90px #ff3b5c99;top:50%;left:50%;transform:translate(-50%,-64%) scale(.2);opacity:0;animation:sun 1.6s .1s forwards cubic-bezier(.2,.8,.2,1)}
+@keyframes sun{to{transform:translate(-50%,-64%) scale(1);opacity:.92}}
+.torii{width:min(58vw,290px);position:relative;opacity:0;filter:drop-shadow(0 0 14px #ff2e63);animation:fup 1s .9s forwards}
+@keyframes fup{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:none}}
+.kj{position:relative;font-size:clamp(54px,18vw,96px);font-weight:900;color:#fff;letter-spacing:.15em;margin:8px 0 0;text-shadow:0 0 22px #35e6ff;opacity:0;animation:fup 1s 1.5s forwards}
+.sb2{position:relative;color:#ffd6ea;letter-spacing:.3em;font-size:13px;text-align:center;opacity:0;animation:fup 1s 2s forwards}
+.fuji{position:absolute;bottom:0;left:0;width:100%;height:30vh}
+.bar2{position:absolute;bottom:calc(env(safe-area-inset-bottom,0px) + 30px);width:50vw;max-width:240px;height:3px;background:#fff3;border-radius:2px;overflow:hidden}.bar2 i{display:block;height:100%;width:0;background:linear-gradient(90deg,#35e6ff,#ff4fa3);animation:ld 3.4s forwards linear}
+@keyframes ld{to{width:100%}}
+.pt{position:absolute;top:-6vh;background:#ffc2dd;border-radius:150% 0 150% 0;opacity:.9;animation:fall linear infinite}
+@keyframes fall{to{transform:translate(var(--dx),112vh) rotate(720deg)}}
+</style></head><body>
+<div id="intro"><div class="sun"></div>
+<svg class="fuji" viewBox="0 0 400 120" preserveAspectRatio="none"><path d="M0 120V95L90 70L150 90L230 20L310 85L360 70L400 90V120Z" fill="#12062a"/><path d="M205 36L230 20L255 40L240 36L230 46L220 36Z" fill="#fff"/></svg>
+<svg class="torii" viewBox="0 0 200 160"><g fill="#ff2e63"><path d="M6 30Q100 6 194 30L190 44Q100 24 10 44Z"/><rect x="24" y="50" width="152" height="9"/><rect x="38" y="44" width="13" height="112"/><rect x="149" y="44" width="13" height="112"/><rect x="92" y="32" width="16" height="20"/></g></svg>
+<div class="kj">圧縮</div><div class="sb2">オムニファイル<br>OMNIFILE ZA</div><div class="bar2"><i></i></div></div>
+<header id="hd"></header>
+<div id="list"></div>
+<button id="fab" aria-label="Acciones">⚡</button>
+<div id="sb"></div>
+<input type="file" id="fi" multiple hidden><input type="file" id="fd" webkitdirectory multiple hidden>
+<div id="ov"><div id="box"></div></div><div id="toast"></div>
+<script>
+const $=id=>document.getElementById(id);
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+let root={n:'',d:true,c:[]},stack=[root],sel=new Set(),sortM=0,showQ=false;
+const cur=()=>stack[stack.length-1];
+/* ---- acceso real al dispositivo (solo en el APK) ---- */
+const NAT=!!(window.Capacitor&&Capacitor.isNativePlatform&&Capacitor.isNativePlatform());
+const D='EXTERNAL_STORAGE',FS=()=>Capacitor.Plugins.Filesystem;let dev=null;
+class LF{constructor(p,s){this.p=p;this.size=s;this.type=''}
+ async arrayBuffer(){const r=await FS().readFile({path:this.p,directory:D}),b=atob(r.data),u=new Uint8Array(b.length);for(let i=0;i<b.length;i++)u[i]=b.charCodeAt(i);return u.buffer}
+ async text(){return new TextDecoder().decode(await this.arrayBuffer())}
+ async toBlob(){return new Blob([await this.arrayBuffer()])}}
+const b64f=blob=>new Promise(r=>{const f=new FileReader();f.onload=()=>r(f.result.split(',')[1]);f.readAsDataURL(blob)});
+async function wr(path,b){if(b.toBlob)b=await b.toBlob();await FS().writeFile({path,data:await b64f(b),directory:D,recursive:true})}
+const fsDel=x=>x.d?FS().rmdir({path:x.path,directory:D,recursive:true}):FS().deleteFile({path:x.path,directory:D});
+function setupDev(){dev={n:'Dispositivo',d:true,real:true,dev:true,loaded:true,c:[['Almacenamiento interno',''],['Download','Download'],['DCIM','DCIM'],['Documents','Documents'],['Pictures','Pictures'],['Music','Music'],['Movies','Movies'],['Android-data','Android/data'],['Android-obb','Android/obb'],['Android-media','Android/media']].map(([n,p])=>({n,d:true,real:true,path:p,loaded:false,c:[]}))}}
+async function ensurePerm(){const A=Capacitor.Plugins.AllFiles;if(!A)return true;const r=await A.check();if(r.granted)return true;
+ sheet('🔐 Activa «Acceso a todos los archivos» y vuelve a abrir',[['⚙️ Abrir ajustes de permiso',()=>A.request()],['Cancelar',()=>{}]]);return false}
+async function loadDir(x){try{const r=await FS().readdir({path:x.path,directory:D});
+ x.c=r.files.map(f=>{const p=(x.path?x.path+'/':'')+f.name;return f.type==='directory'?{n:f.name,d:true,real:true,path:p,loaded:false,c:[]}:{n:f.name,d:false,real:true,path:p,b:new LF(p,f.size||0)}});x.loaded=true;return true}
+ catch(e){toast('🔒 Android bloquea esta carpeta en tu versión, o falta el permiso');return false}}
+async function flush(d){for(const x of d.c){
+ if(!x.real){x.path=(d.path?d.path+'/':'')+x.n;if(x.d)await FS().mkdir({path:x.path,directory:D,recursive:true});else await wr(x.path,x.b);x.real=true;x.loaded=!!x.d}
+ if(x.d&&x.real&&(x.loaded||x.dev))await flush(x)}}
+/* ---- guardado local ---- */
+let dbp=null;try{dbp=new Promise((r,j)=>{const q=indexedDB.open('omniza',1);q.onupgradeneeded=()=>q.result.createObjectStore('s');q.onsuccess=()=>r(q.result);q.onerror=j})}catch(e){}
+async function save(){if(dev){try{await flush(dev)}catch(e){toast('⚠️ '+e.message)}}try{(await dbp).transaction('s','readwrite').objectStore('s').put({...root,c:root.c.filter(x=>x!==dev)},'fs')}catch(e){}}
+async function load(){try{const d=await dbp;return await new Promise(r=>{const q=d.transaction('s').objectStore('s').get('fs');q.onsuccess=()=>r(q.result);q.onerror=()=>r()})}catch(e){}}
+/* ---- utilidades ---- */
+function toast(t){const e=$('toast');e.textContent=t;e.classList.add('on');clearTimeout(toast.t);toast.t=setTimeout(()=>e.classList.remove('on'),2800)}
+const fmt=b=>b<1024?b+' B':b<1048576?(b/1024).toFixed(1)+' KB':(b/1048576).toFixed(2)+' MB';
+const ext=n=>(n.split('.').pop()||'').toLowerCase();
+const isArc=n=>/\.(zip|tar|tgz|tar\.gz)$/i.test(n);
+const isTxt=f=>/^(txt|json|js|md|html|css|csv|script|xml|log|py|ini|sh|yml|yaml)$/.test(ext(f.n));
+const icon=f=>f.dev?'📱':f.d?'📁':isArc(f.n)?'🗜️':{png:'🖼️',jpg:'🖼️',jpeg:'🖼️',gif:'🖼️',webp:'🖼️',mp3:'🎵',wav:'🎵',mp4:'🎬',pdf:'📕',apk:'🤖'}[ext(f.n)]||(isTxt(f)?'📝':'📄');
+const cls=f=>f.d?'f':isArc(f.n)?'a':isTxt(f)?'t':'';
+const size=n=>n.d?n.c.reduce((a,x)=>a+size(x),0):n.b.size;
+function uniq(dir,name){if(!dir.c.some(x=>x.n===name))return name;const i=name.lastIndexOf('.'),b=i>0?name.slice(0,i):name,e=i>0?name.slice(i):'';let k=1;while(dir.c.some(x=>x.n===`${b} (${k})${e}`))k++;return `${b} (${k})${e}`}
+async function dl(blob,name){
+ if(blob&&blob.toBlob)blob=await blob.toBlob();
+ const C=window.Capacitor;
+ if(C&&C.isNativePlatform&&C.isNativePlatform()&&C.Plugins&&C.Plugins.Filesystem){
+  const b64=await new Promise(r=>{const f=new FileReader();f.onload=()=>r(f.result.split(',')[1]);f.readAsDataURL(blob)});
+  for(const dir of ['DOCUMENTS','EXTERNAL']){try{await C.Plugins.Filesystem.writeFile({path:'OmniFileZA/'+name,data:b64,directory:dir,recursive:true});return toast('💾 Guardado en '+(dir==='DOCUMENTS'?'Documentos':'Android/data/…/files')+'/OmniFileZA/'+name)}catch(e){}}
+  return toast('⚠️ No se pudo guardar en el dispositivo')}
+ const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),5000)}
+/* ---- ventanas ---- */
+const close=()=>$('ov').style.display='none';
+function open(html,mode){$('box').innerHTML=html;$('ov').className=mode;$('ov').style.display='flex'}
+$('ov').onclick=e=>{if(e.target===$('ov'))close()};
+function sheet(title,opts){open(`<h3>${esc(title)}</h3>`+opts.map((o,i)=>`<button class="opt" data-o="${i}">${o[0]}</button>`).join(''),'sheet');$('box').onclick=e=>{const b=e.target.closest('.opt');if(b){close();opts[+b.dataset.o][1]()}}}
+function ask(title,fields,ok,fn){open(`<h3>${title}</h3>`+fields.map(f=>`<label>${f.l}</label>`+(f.o?`<select id="f_${f.id}">${f.o.map(o=>`<option value="${o[0]}">${o[1]}</option>`).join('')}</select>`:f.ta?`<textarea id="f_${f.id}">${esc(f.v||'')}</textarea>`:`<input class="i" id="f_${f.id}" value="${esc(f.v||'')}">`)).join('')+`<div class="acts"><button class="bt" id="mc">Cancelar</button><button class="bt p" id="mo">${ok}</button></div>`,'mid');
+ $('box').onclick=null;$('mc').onclick=close;
+ $('mo').onclick=async()=>{const v={};fields.forEach(f=>v[f.id]=$('f_'+f.id).value);try{await fn(v)}catch(e){toast('⚠️ '+e.message)}}}
+/* ---- motor de compresión ---- */
+const CT=(()=>{const t=[];for(let n=0;n<256;n++){let c=n;for(let k=0;k<8;k++)c=c&1?0xEDB88320^(c>>>1):c>>>1;t[n]=c>>>0}return t})();
+const crc32=u=>{let c=-1;for(let i=0;i<u.length;i++)c=CT[(c^u[i])&255]^(c>>>8);return(c^-1)>>>0};
+const pipe=async(u8,Cls,f)=>new Uint8Array(await new Response(new Blob([u8]).stream().pipeThrough(new Cls(f))).arrayBuffer());
+function collect(nodes,pre,out){for(const x of nodes){if(x.d){out.push({p:pre+x.n+'/',dir:1});collect(x.c,pre+x.n+'/',out)}else out.push({p:pre+x.n,b:x.b})}return out}
+async function mkZip(files,lvl){
+ const parts=[],cd=[],enc=new TextEncoder();let off=0,cs=0;
+ for(const f of files){
+  const nm=enc.encode(f.p),raw=f.dir?new Uint8Array(0):new Uint8Array(await f.b.arrayBuffer()),crc=crc32(raw);let m=0,d=raw;
+  if(lvl>0&&raw.length){d=await pipe(raw,CompressionStream,'deflate-raw');m=8}
+  const l=new DataView(new ArrayBuffer(30));l.setUint32(0,0x04034b50,true);l.setUint16(4,20,true);l.setUint16(6,0x800,true);l.setUint16(8,m,true);l.setUint16(12,0x21,true);l.setUint32(14,crc,true);l.setUint32(18,d.length,true);l.setUint32(22,raw.length,true);l.setUint16(26,nm.length,true);
+  parts.push(l.buffer,nm,d);
+  const c=new DataView(new ArrayBuffer(46));c.setUint32(0,0x02014b50,true);c.setUint16(4,20,true);c.setUint16(6,20,true);c.setUint16(8,0x800,true);c.setUint16(10,m,true);c.setUint16(14,0x21,true);c.setUint32(16,crc,true);c.setUint32(20,d.length,true);c.setUint32(24,raw.length,true);c.setUint16(28,nm.length,true);c.setUint32(42,off,true);
+  cd.push(c.buffer,nm);cs+=46+nm.length;off+=30+nm.length+d.length}
+ const e=new DataView(new ArrayBuffer(22));e.setUint32(0,0x06054b50,true);e.setUint16(8,files.length,true);e.setUint16(10,files.length,true);e.setUint32(12,cs,true);e.setUint32(16,off,true);
+ return new Blob([...parts,...cd,e.buffer],{type:'application/zip'})}
+async function mkTar(files){
+ const enc=new TextEncoder(),parts=[];
+ for(const f of files){
+  const raw=f.dir?new Uint8Array(0):new Uint8Array(await f.b.arrayBuffer()),h=new Uint8Array(512),w=(s,o)=>h.set(enc.encode(s).slice(0,100),o);
+  w(f.p,0);w('0000644\0',100);w('0000000\0',108);w('0000000\0',116);w(raw.length.toString(8).padStart(11,'0')+'\0',124);w('00000000000\0',136);w('        ',148);
+  h[156]=f.dir?53:48;w('ustar\0',257);w('00',263);let s=0;h.forEach(v=>s+=v);w(s.toString(8).padStart(6,'0')+'\0 ',148);
+  parts.push(h,raw,new Uint8Array((512-raw.length%512)%512))}
+ parts.push(new Uint8Array(1024));return new Blob(parts,{type:'application/x-tar'})}
+async function readZip(buf){
+ const dv=new DataView(buf),u=new Uint8Array(buf),dec=new TextDecoder();let e=-1;
+ for(let i=buf.byteLength-22;i>=Math.max(0,buf.byteLength-70000);i--)if(dv.getUint32(i,true)===0x06054b50){e=i;break}
+ if(e<0)throw new Error('ZIP no válido');
+ const cnt=dv.getUint16(e+10,true);let p=dv.getUint32(e+16,true);const out=[];
+ for(let i=0;i<cnt;i++){
+  const m=dv.getUint16(p+10,true),cz=dv.getUint32(p+20,true),nl=dv.getUint16(p+28,true),el=dv.getUint16(p+30,true),cl=dv.getUint16(p+32,true),lo=dv.getUint32(p+42,true);
+  const name=dec.decode(u.slice(p+46,p+46+nl));p+=46+nl+el+cl;
+  if(name.endsWith('/')){out.push({p:name,dir:1});continue}
+  const s=lo+30+dv.getUint16(lo+26,true)+dv.getUint16(lo+28,true);let d=u.slice(s,s+cz);
+  if(m===8)d=await pipe(d,DecompressionStream,'deflate-raw');else if(m!==0)throw new Error('Método ZIP no soportado');
+  out.push({p:name,b:new Blob([d])})}
+ return out}
+function readTar(u){
+ const dec=new TextDecoder(),out=[];let p=0;const s=(a,b)=>dec.decode(u.slice(p+a,p+b)).split('\0')[0];
+ while(p+512<=u.length){const nm=s(0,100);if(!nm)break;const sz=parseInt(s(124,136).trim()||'0',8),t=u[p+156],pre=s(345,500),full=pre?pre+'/'+nm:nm;
+  if(t===53||full.endsWith('/'))out.push({p:full.endsWith('/')?full:full+'/',dir:1});
+  else if(t===0||t===48)out.push({p:full,b:new Blob([u.slice(p+512,p+512+sz)])});
+  p+=512+Math.ceil(sz/512)*512}
+ return out}
+async function readArc(x){
+ const buf=await x.b.arrayBuffer();
+ if(/\.zip$/i.test(x.n))return readZip(buf);
+ if(/\.(tgz|tar\.gz)$/i.test(x.n))return readTar(await pipe(new Uint8Array(buf),DecompressionStream,'gzip'));
+ return readTar(new Uint8Array(buf))}
+function addPath(dir,path,blob){
+ const parts=path.split('/').filter(Boolean),last=path.endsWith('/')?null:parts.pop();
+ for(const s of parts){let n=dir.c.find(x=>x.d&&x.n===s);if(!n){n={n:s,d:true,c:[]};dir.c.push(n)}dir=n}
+ if(last){const i=dir.c.findIndex(x=>x.n===last&&!x.d);if(i>=0)dir.c.splice(i,1);dir.c.push({n:last,d:false,b:blob})}}
+/* ---- acciones ---- */
+function compress(nodes){
+ const def=nodes.length===1?nodes[0].n.replace(/\.[^.]*$/,''):(cur().n||'archivo');
+ ask('🗜️ Comprimir '+nodes.length+' elemento(s)',[
+ {id:'n',l:'Nombre del archivo',v:def},
+ {id:'f',l:'Formato',o:[['zip','ZIP · el más compatible (Windows, Android, Mac)'],['tar','TAR · agrupa sin comprimir'],['tgz','TAR.GZ · comprimido estilo Linux']]},
+ {id:'l',l:'Nivel de compresión (solo ZIP)',o:[['1','Normal · ocupa menos'],['0','Almacenar · muy rápido, sin reducir']]},
+ {id:'h',l:'Archivos ocultos (empiezan por punto)',o:[['si','Incluirlos'],['no','Omitirlos']]},
+ {id:'a',l:'Al terminar',o:[['k','Conservar los originales'],['d','Borrar los originales']]},
+ {id:'s',l:'Copia',o:[['n','Solo guardar aquí'],['y','Guardar aquí y descargar una copia']]}],'Comprimir',async v=>{
+  toast('⏳ Comprimiendo…');let files=collect(nodes,'',[]);
+  if(v.h==='no')files=files.filter(f=>!f.p.split('/').some(s=>s.startsWith('.')));
+  const orig=files.reduce((a,f)=>a+(f.b?f.b.size:0),0);let blob,ex;
+  if(v.f==='zip'){blob=await mkZip(files,+v.l);ex='.zip'}else{const t=await mkTar(files);if(v.f==='tar'){blob=t;ex='.tar'}else{blob=await new Response(t.stream().pipeThrough(new CompressionStream('gzip'))).blob();ex='.tar.gz'}}
+  const name=uniq(cur(),(v.n.trim()||'archivo').replace(/\//g,'_')+ex);cur().c.push({n:name,d:false,b:blob});
+  if(v.a==='d')for(const x of nodes){const i=cur().c.indexOf(x);if(i>=0){if(x.real)await fsDel(x);cur().c.splice(i,1)}}
+  sel.clear();await save();close();render();if(v.s==='y')dl(blob,name);
+  toast(`✅ ${name} · ${fmt(blob.size)}`+(orig?` · ahorro ${Math.max(0,Math.round(100-blob.size*100/orig))}%`:''))})}
+async function extract(x,folder,show){
+ try{toast('⏳ Extrayendo…');const files=await readArc(x);let dir=cur();
+  if(folder){const nd={n:uniq(dir,x.n.replace(/\.(tar\.gz|tgz|zip|tar)$/i,'')),d:true,c:[]};dir.c.push(nd);dir=nd}
+  files.forEach(f=>addPath(dir,f.p,f.b));sel.clear();await save();render();const cnt=files.filter(f=>!f.dir).length;toast(`📦 ${cnt} archivos extraídos`);if(show)afterExtract(x,folder?dir:null,cnt)}catch(e){toast('⚠️ '+e.message)}}
+function afterExtract(x,nd,cnt){
+ const o=[];
+ if(nd)o.push(['📂 Abrir carpeta «'+nd.n+'»',()=>{stack.push(nd);render()}],['🗜️ Volver a comprimir «'+nd.n+'»',()=>compress([nd])]);
+ else o.push(['🗜️ Comprimir todo lo de esta carpeta',()=>compress(cur().c.slice())]);
+ o.push(['🗑️ Borrar el comprimido original',()=>remove([x])],['⬇️ Descargar «'+x.n+'»',()=>dl(x.b,x.n)],['👍 Listo',()=>{}]);
+ sheet('✅ '+cnt+' archivos extraídos',o)}
+async function view(x){
+ try{const f=await readArc(x);open(`<h3>📂 ${esc(x.n)}</h3>`+f.map(e=>`<div class="li"><span>${e.dir?'📁 ':''}${esc(e.p)}</span><span>${e.dir?'':fmt(e.b.size)}</span></div>`).join('')+'<div class="acts" style="margin-top:12px"><button class="bt" onclick="close()">Cerrar</button></div>','mid');$('box').onclick=null}catch(e){toast('⚠️ '+e.message)}}
+function rename(x){ask('🏷️ Renombrar',[{id:'n',l:'Nuevo nombre',v:x.n}],'Guardar',async v=>{const n=v.n.trim().replace(/\//g,'_');if(!n)return;if(n!==x.n&&cur().c.some(y=>y.n===n))throw new Error('Ya existe ese nombre');if(x.real){if(cur().dev)throw new Error('Esa carpeta no se puede renombrar');const np=(cur().path?cur().path+'/':'')+n;if(n!==x.n){await FS().rename({from:x.path,to:np,directory:D,toDirectory:D});x.path=np;if(x.d){x.c=[];x.loaded=false}}}x.n=n;sel.clear();await save();close();render()})}
+function remove(nodes){ask('🗑️ Eliminar',[{id:'x',l:`¿Eliminar ${nodes.length} elemento(s)? No se puede deshacer.`,o:[['y','Sí, eliminar']]}],'Eliminar',async()=>{for(const x of nodes)if(x.real)await fsDel(x);cur().c=cur().c.filter(x=>!nodes.includes(x));sel.clear();await save();close();render();toast('🗑️ Eliminado')})}
+function edit(x){x.b.text().then(t=>ask('📝 '+esc(x.n),[{id:'t',l:'Contenido',ta:1,v:t}],'Guardar',async v=>{x.b=new Blob([v.t],{type:'text/plain'});if(x.real)await wr(x.path,x.b);await save();close();render();toast('💾 Guardado')}))}
+async function openItem(x){
+ if(x.d){if(x.real&&!(await ensurePerm()))return;if(x.real&&!x.dev&&!(await loadDir(x)))return;stack.push(x);$('q').value='';render();return}
+ if(isArc(x.n))return sheet(x.n,[['📂 Ver contenido',()=>view(x)],['📦 Extraer aquí',()=>extract(x,false,1)],['📁 Extraer en «'+x.n.replace(/\.(tar\.gz|tgz|zip|tar)$/i,'')+'»',()=>extract(x,true,1)],['⬇️ Descargar',()=>dl(x.b,x.n)]]);
+ if(isTxt(x))return sheet(x.n,[['📝 Editar',()=>edit(x)],['⬇️ Descargar',()=>dl(x.b,x.n)],['🗜️ Comprimir',()=>compress([x])]]);
+ sheet(x.n,[['⬇️ Descargar',()=>dl(x.b,x.n)],['🗜️ Comprimir',()=>compress([x])]])}
+/* ---- interfaz ---- */
+function render(){
+ const d=cur(),n=sel.size;document.body.classList.toggle('sel',n>0);
+ $('hd').innerHTML=n?`<div class="row1"><button class="ib" id="x">✕</button><div class="logo">${n} seleccionado(s)</div><button class="ib" id="all">☑️</button></div>`
+ :`<div class="row1"><div class="logo">OmniFile <i>ZA</i> 圧縮</div>${d.real&&!d.dev?'<button class="ib" id="rf">🔄</button>':''}<button class="ib" id="sq">🔍</button><button class="ib" id="so">${['🔤','📏'][sortM]}</button></div><div id="crumb">${stack.map((s,i)=>`<button data-i="${i}">${i?esc(s.n):'📱 ストレージ'}</button>`).join('')}</div><input id="q" placeholder="Buscar en esta carpeta…" value="${esc($('q')?$('q').value:'')}" style="display:${showQ?'block':'none'}">`;
+ const q=($('q')?$('q').value:'').toLowerCase();
+ const items=d.c.filter(x=>x.n.toLowerCase().includes(q)).sort((a,b)=>b.d-a.d||(sortM?size(b)-size(a):a.n.localeCompare(b.n)));
+ $('list').innerHTML=items.length?items.map(x=>`<div class="row${sel.has(x)?' s':''}" data-i="${d.c.indexOf(x)}"><div class="ic ${cls(x)}">${icon(x)}</div><div class="nm"><b>${esc(x.n)}</b><small>${x.d?x.c.length+' elementos':fmt(x.b.size)}</small></div><div class="ck">✓</div></div>`).join(''):`<div class="empty"><big>${q?'🔍':'🌸'}</big>${q?'Sin resultados':'Carpeta vacía<br>Toca ⚡ para crear o cargar archivos'}</div>`;
+ const one=n===1?[...sel][0]:null,arcs=[...sel].every(x=>!x.d&&isArc(x.n));
+ $('sb').innerHTML=`<button data-a="zip"><span>🗜️</span>Comprimir</button>${n&&arcs?'<button data-a="ex"><span>📦</span>Extraer</button>':''}${one&&!one.d?'<button data-a="dl"><span>⬇️</span>Bajar</button>':''}${one?'<button data-a="rn"><span>🏷️</span>Renombrar</button>':''}<button data-a="rm"><span>🗑️</span>Eliminar</button>`;
+ const H=$('hd');if($('x'))$('x').onclick=()=>{sel.clear();render()};if($('all'))$('all').onclick=()=>{cur().c.forEach(x=>sel.add(x));render()};
+ if($('rf'))$('rf').onclick=async()=>{if(await loadDir(cur())){render();toast('🔄 Actualizado')}};if($('sq'))$('sq').onclick=()=>{showQ=!showQ;render();if(showQ)$('q').focus()};if($('so'))$('so').onclick=()=>{sortM=1-sortM;render();toast(sortM?'Orden: tamaño':'Orden: nombre')};
+ if($('q'))$('q').oninput=()=>{const v=$('q').value;render();$('q').focus();$('q').setSelectionRange(v.length,v.length)};
+ $('crumb')&&($('crumb').onclick=e=>{const b=e.target.closest('button');if(b){stack=stack.slice(0,+b.dataset.i+1);sel.clear();render()}});
+ const cr=$('crumb');if(cr)cr.scrollLeft=cr.scrollWidth}
+let lp,lf=false;const L=$('list');
+L.addEventListener('pointerdown',e=>{const r=e.target.closest('.row');if(!r)return;lf=false;lp=setTimeout(()=>{lf=true;const x=cur().c[+r.dataset.i];sel.has(x)?sel.delete(x):sel.add(x);navigator.vibrate&&navigator.vibrate(25);render()},450)});
+['pointerup','pointermove','pointercancel'].forEach(t=>L.addEventListener(t,()=>clearTimeout(lp)));
+L.addEventListener('contextmenu',e=>e.preventDefault());
+L.addEventListener('click',e=>{const r=e.target.closest('.row');if(!r)return;if(lf){lf=false;return}const x=cur().c[+r.dataset.i];if(sel.size){sel.has(x)?sel.delete(x):sel.add(x);render()}else openItem(x)});
+$('sb').onclick=e=>{const b=e.target.closest('button');if(!b)return;const ns=[...sel],a=b.dataset.a;
+ if(a==='zip')compress(ns);if(a==='rm')remove(ns);if(a==='rn')rename(ns[0]);if(a==='dl'){dl(ns[0].b,ns[0].n)}
+ if(a==='ex')(async()=>{for(const x of ns)await extract(x,true)})()};
+$('fab').onclick=()=>sheet('Nuevo',[['📁 Nueva carpeta',()=>ask('📁 Nueva carpeta',[{id:'n',l:'Nombre',v:''}],'Crear',async v=>{const n=v.n.trim().replace(/\//g,'_');if(!n)return;cur().c.push({n:uniq(cur(),n),d:true,c:[]});await save();close();render()})],
+ ['📝 Nuevo archivo de texto',()=>ask('📝 Nuevo archivo',[{id:'n',l:'Nombre con extensión',v:'nota.txt'},{id:'t',l:'Contenido',ta:1}],'Guardar',async v=>{const n=v.n.trim().replace(/\//g,'_');if(!n)return;cur().c.push({n:uniq(cur(),n),d:false,b:new Blob([v.t],{type:'text/plain'})});await save();close();render()})],
+ ['📥 Cargar archivos del dispositivo',()=>$('fi').click()],
+ ['📂 Cargar una carpeta completa',()=>$('fd').click()],
+ ['🗜️ Comprimir TODO el almacenamiento',()=>root.c.filter(x=>!x.dev).length?compress(root.c.filter(x=>!x.dev)):toast('No hay nada que comprimir')],
+ [`🗜️ Comprimir toda esta carpeta`,()=>cur().c.length?compress(cur().c.slice()):toast('La carpeta está vacía')]]);
+$('fd').onchange=async e=>{let n=0;for(const f of e.target.files){addPath(cur(),f.webkitRelativePath||f.name,f);n++}e.target.value='';await save();render();toast('📂 '+n+' archivos cargados con sus carpetas')};
+$('fi').onchange=async e=>{for(const f of e.target.files)cur().c.push({n:uniq(cur(),f.name),d:false,b:f});e.target.value='';await save();render();toast('📥 Archivos cargados')};
+addEventListener('popstate',()=>{if(sel.size){sel.clear();render();history.pushState({},'')}else if(stack.length>1){stack.pop();render();history.pushState({},'')}});
+history.pushState({},'');
+(function(){const i=$('intro');for(let k=0;k<26;k++){const p=document.createElement('span'),z=7+Math.random()*9;p.className='pt';p.style.cssText=`left:${Math.random()*100}%;width:${z}px;height:${z}px;--dx:${Math.random()*40-20}vw;animation-duration:${4+Math.random()*4}s;animation-delay:${-Math.random()*6}s`;i.appendChild(p)}
+const end=()=>{i.classList.add('out');setTimeout(()=>i.remove(),900)};setTimeout(end,3600);i.onclick=end})();
+(async()=>{const r=await load();if(r&&r.c){root=r;stack=[root]}if(NAT){setupDev();root.c.unshift(dev)}render();if(typeof CompressionStream==='undefined')toast('⚠️ Tu navegador no soporta compresión nativa')})();
+</script></body></html>
